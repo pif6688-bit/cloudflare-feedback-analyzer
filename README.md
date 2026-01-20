@@ -93,15 +93,53 @@ The needs moment occurs when fragmented feedback stops feeling overwhelming and 
 
 ---
 
-## Architecture Overview
+## Architecture
 
-This prototype is built entirely on Cloudflare’s platform:
+This prototype follows a logical, component-based architecture focused on
+data flow and decision boundaries rather than infrastructure complexity.
 
-- **Cloudflare Workers** – API and UI layer
-- **Workers AI** – Feedback analysis and triage
-- **KV** – Persistent feedback storage
+The following diagram shows the end-to-end feedback flow and decision boundaries in the prototype:
 
-Bindings are configured via `wrangler.jsonc` and injected at runtime.
+<div align="center">
+
+```text
+Feedback Sources
+Support · Discord · GitHub · Email · Users
+    |
+    v
+(1) Feedback Input Layer  [Cloudflare Worker]
+- POST /feedback
+- Web form (Inbox UI)
+- Source tagging + deduplication (hash id)
+    |
+    v
+(2) Preprocessing & Normalization
+- Theme inference (heuristics baseline)
+- Priority baseline (P0 / P1 / P2)
+- Guardrails: sentiment & value normalization
+- Robust JSON parsing for model output
+    |
+    v
+(3) Storage Layer  [Cloudflare KV]
+- FEEDBACK_STORAGE (aggregated inbox)
+- analysis:last cache (optional)
+    |
+    v
+(4) AI Analysis Engine  [Workers AI]
+- Two-pass analysis
+    Pass 1: Theme clustering
+    Pass 2: Urgency + Value + Sentiment
+- Retry + deterministic fallback
+    |
+    v
+(5) Insight & Visualization Layer
+- Inbox triage workflow (status + priority)
+- Triage summary (/analyze)
+- Top urgency cards + value score
+- Evidence-linked feedback
+- Export: /export.json, /export.csv
+</div>
+```
 
 ---
 
