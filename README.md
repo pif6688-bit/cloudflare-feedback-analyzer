@@ -93,52 +93,37 @@ The needs moment occurs when fragmented feedback stops feeling overwhelming and 
 
 ---
 
-## Architecture
-
-This prototype follows a logical, component-based architecture focused on
-data flow and decision boundaries rather than infrastructure complexity.
-
 The following diagram shows the end-to-end feedback flow and decision boundaries in the prototype:
-
-<div align="center">
-
 ```text
 Feedback Sources
-Support · Discord · GitHub · Email · Users
-    |
-    v
+  - Support / Discord / GitHub / Email / Users
+                ⬇️
 (1) Feedback Input Layer  [Cloudflare Worker]
-- POST /feedback
-- Web form (Inbox UI)
-- Source tagging + deduplication (hash id)
-    |
-    v
+  - POST /feedback
+  - Web form (Inbox UI)
+  - Source tagging + dedup (hash id)
+                ⬇️
 (2) Preprocessing & Normalization
-- Theme inference (heuristics baseline)
-- Priority baseline (P0 / P1 / P2)
-- Guardrails: sentiment & value normalization
-- Robust JSON parsing for model output
-    |
-    v
+  - Theme inference (heuristics baseline)
+  - Priority baseline (P0 / P1 / P2)
+  - Guardrails: sentiment/value normalization
+  - Robust JSON parsing for model output
+                ⬇️
 (3) Storage Layer  [Cloudflare KV]
-- FEEDBACK_STORAGE (aggregated inbox)
-- analysis:last cache (optional)
-    |
-    v
+  - FEEDBACK_STORAGE (aggregated inbox)
+  - analysis:last cache (optional)
+                ⬇️
 (4) AI Analysis Engine  [Workers AI]
-- Two-pass analysis
-    Pass 1: Theme clustering
-    Pass 2: Urgency + Value + Sentiment
-- Retry + deterministic fallback
-    |
-    v
+  - Two-pass analysis
+      Pass 1: Themes
+      Pass 2: Urgency + Value + Sentiment
+  - Retry + deterministic fallback
+                ⬇️
 (5) Insight & Visualization Layer
-- Inbox triage workflow (status + priority)
-- Triage summary (/analyze)
-- Top urgency cards + value score
-- Evidence-linked feedback
-- Export: /export.json, /export.csv
-</div>
+  - Inbox triage workflow (status + priority)
+  - Triage summary (/analyze) with urgency cards + value score
+  - Evidence-linked feedback ids
+  - Export: /export.json, /export.csv
 ```
 
 ---
